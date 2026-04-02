@@ -10,15 +10,21 @@ type AppActionsProps = {
   versionName: string;
   versionCode: number;
   sizeMb: number;
+  isLoggedIn: boolean;
+  installedVersionCode?: number | null;
 }
 
-export default function AppActions({ appId, apkUrl, versionName, versionCode, sizeMb }: AppActionsProps) {
+export default function AppActions({ appId, apkUrl, versionName, versionCode, sizeMb, isLoggedIn, installedVersionCode: propInstalledVersionCode }: AppActionsProps) {
   const [downloading, setDownloading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [installedVersionCode, setInstalledVersionCode] = useState<number | null>(null)
 
   // 🔄 Cek status instalasi lokal (LocalStorage) saat pertama kali buka halaman
   useEffect(() => {
+    if (propInstalledVersionCode) {
+      setInstalledVersionCode(propInstalledVersionCode)
+      return
+    }
     try {
       const localStore = localStorage.getItem(`installed_${appId}`);
       if (localStore) {
@@ -27,7 +33,7 @@ export default function AppActions({ appId, apkUrl, versionName, versionCode, si
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [appId]);
+  }, [appId, propInstalledVersionCode]);
 
   const isInstalled = installedVersionCode !== null
   const needsUpdate = isInstalled && versionCode > (installedVersionCode || 0)
