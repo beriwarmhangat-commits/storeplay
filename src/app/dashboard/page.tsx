@@ -29,6 +29,10 @@ export default async function Dashboard({ searchParams }: PageProps) {
     .single()
 
   const isAdmin = profile?.role === 'admin'
+  
+  if (!isAdmin) {
+    redirect('/')
+  }
 
   // Fetch apps
   // If admin: view all apps. If developer: view only own apps.

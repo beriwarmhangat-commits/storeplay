@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { ChevronLeft, ChevronRight, Gamepad2, Wrench, Users, Briefcase, PlayCircle, GraduationCap, LayoutGrid } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Gamepad2, Wrench, Users, Briefcase, PlayCircle, GraduationCap, LayoutGrid, Laugh, Cpu, Heart, Trophy } from 'lucide-react'
 
 // Map Ikon dari Database ke Komponen Lucide
 const IconMap: { [key: string]: any } = {
-  Gamepad2, Wrench, Users, Briefcase, PlayCircle, GraduationCap, LayoutGrid
+  Gamepad2, Wrench, Users, Briefcase, PlayCircle, GraduationCap, LayoutGrid, Laugh, Cpu, Heart, Trophy
 }
 
 type Category = {
@@ -35,14 +35,14 @@ export default function CategorySlider({ categories }: { categories: Category[] 
       </button>
 
       {/* Konten Slider */}
-      <div 
+      <div
         ref={scrollRef}
-        style={{ 
-          display: 'flex', 
-          gap: '0.75rem', 
-          overflowX: 'auto', 
+        style={{
+          display: 'flex',
+          gap: '0.75rem',
+          overflowX: 'auto',
           padding: '0.5rem 0',
-          WebkitOverflowScrolling: 'touch', 
+          WebkitOverflowScrolling: 'touch',
           scrollSnapType: 'x mandatory',
           msOverflowStyle: 'none',
           scrollbarWidth: 'none'
@@ -55,14 +55,14 @@ export default function CategorySlider({ categories }: { categories: Category[] 
         {/* Tombol "All" */}
         <button
           onClick={() => setSelected('all')}
-          style={{ 
+          style={{
             flex: '0 0 auto',
             scrollSnapAlign: 'start',
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.6rem', 
-            padding: '0.6rem 1.25rem', 
-            borderRadius: 'var(--radius-full)', 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            padding: '0.6rem 1.25rem',
+            borderRadius: 'var(--radius-full)',
             fontSize: '0.9rem',
             fontWeight: 700,
             whiteSpace: 'nowrap',
@@ -84,14 +84,14 @@ export default function CategorySlider({ categories }: { categories: Category[] 
             <button
               key={cat.id}
               onClick={() => setSelected(cat.slug)}
-              style={{ 
+              style={{
                 flex: '0 0 auto',
                 scrollSnapAlign: 'start',
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.6rem', 
-                padding: '0.6rem 1.25rem', 
-                borderRadius: 'var(--radius-full)', 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                padding: '0.6rem 1.25rem',
+                borderRadius: 'var(--radius-full)',
                 fontSize: '0.9rem',
                 fontWeight: 700,
                 whiteSpace: 'nowrap',

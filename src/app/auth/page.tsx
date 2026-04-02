@@ -3,9 +3,11 @@
 import { useState, Suspense } from 'react'
 import { login, signup } from './actions'
 import { useSearchParams } from 'next/navigation'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 function AuthForm() {
   const [isLogin, setIsLogin] = useState(true)
+  const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
   const type = searchParams.get('type') || 'error'
@@ -23,8 +25,22 @@ function AuthForm() {
 
   const noticeStyle = getNoticeStyle()
 
+  const handleSubmit = async (formData: FormData) => {
+    setLoading(true)
+    try {
+       if (isLogin) {
+         await login(formData)
+       } else {
+         await signup(formData)
+       }
+    } finally {
+       setLoading(false)
+    }
+  }
+
   return (
-    <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '3rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: 'var(--shadow-md)' }}>
+    <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '3rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+      {loading && <LoadingOverlay message={isLogin ? "Sedang login..." : "Mendaftarkan Anda..."} />}
       <h1 style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.8rem', fontWeight: 800 }}>
         {isLogin ? 'Welcome Back' : 'Create Account'}
       </h1>
@@ -35,7 +51,7 @@ function AuthForm() {
         </div>
       )}
 
-      <form action={isLogin ? login : signup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form action={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {!isLogin && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label htmlFor="fullName" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Developer / Company Name</label>

@@ -26,10 +26,12 @@ export default async function AuthNav() {
 
   return (
     <div id="top-auth-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-      <Link href={isAdmin ? '/admin' : '/dashboard'} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>
-        <LayoutDashboard size={18} />
-        {isAdmin ? 'Admin Panel' : 'Dashboard'}
-      </Link>
+      {isAdmin && (
+        <Link href="/admin" className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>
+          <LayoutDashboard size={18} />
+          Admin Panel
+        </Link>
+      )}
       <form action={logout}>
         <button type="submit" className="btn btn-outline" style={{ padding: '0.5rem 1rem', border: 'none', color: '#ef4444' }}>
           <LogOut size={18} /> Sign Out
