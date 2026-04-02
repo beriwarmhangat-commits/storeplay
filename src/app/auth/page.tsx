@@ -52,13 +52,6 @@ function AuthForm() {
       )}
 
       <form action={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {!isLogin && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label htmlFor="fullName" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Developer / Company Name</label>
-            <input id="fullName" name="fullName" type="text" required style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
-          </div>
-        )}
-        
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <label htmlFor="email" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Email Address</label>
           <input id="email" name="email" type="email" required style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
@@ -70,20 +63,9 @@ function AuthForm() {
         </div>
 
         <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
-          {isLogin ? 'Sign In' : 'Sign Up'}
+          Sign In
         </button>
       </form>
-
-      <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-        {isLogin ? "Don't have a developer account? " : "Already have an account? "}
-        <button 
-          type="button" 
-          onClick={() => setIsLogin(!isLogin)}
-          style={{ background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 600, cursor: 'pointer' }}
-        >
-          {isLogin ? 'Sign Up' : 'Sign In'}
-        </button>
-      </p>
     </div>
   )
 }
