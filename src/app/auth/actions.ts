@@ -36,7 +36,7 @@ export async function signup(formData: FormData) {
   const headerList = await headers()
   const ip = headerList.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
 
-  // 2. Cek apakah IP sudah mendaftarkan 2 akun
+  // 2. Cek apakah IP sudah mendaftarkan 2 akun di tabel profiles
   const { count } = await supabase
     .from('profiles')
     .select('id', { count: 'exact', head: true })
@@ -46,14 +46,13 @@ export async function signup(formData: FormData) {
     return redirect(`/auth?message=Maaf, batas maksimum pendaftaran (2 akun) per IP telah tercapai.&type=error`)
   }
 
+  // 3. Masukkan ke sistem Authentication Supabase
   const result = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        full_name: fullName,
-        role: 'user', // Default sekarang user, bukan developer
-        registration_ip: ip
+        full_name: fullName, // Tetap simpan di metadata sebagai backup
       }
     }
   })
@@ -62,7 +61,24 @@ export async function signup(formData: FormData) {
     return redirect(`/auth?message=${result.error.message}&type=error`)
   }
 
-  // Registrasi berhasil (Sekarang otomatis login karena email confirm OFF)
+  // 4. ROMBAK TOTAL: Manual Insert ke tabel profiles (Menghindari error Database saving new user)
+  if (result.data.user) {
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: result.data.user.id,
+        email: email,
+        developer_name: fullName,
+        role: 'user',
+        registration_ip: ip
+      })
+
+    if (profileError) {
+      console.error('Manual Profile Insert Error:', profileError)
+      // Kita tetap lanjut karena user di auth sudah terbuat, tapi log error-nya
+    }
+  }
+
   revalidatePath('/', 'layout')
   redirect('/auth?message=Register berhasil silahkan login&type=success')
 }
