@@ -4,6 +4,7 @@ import { ShoppingBag, Mail, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import AuthNav from '@/components/AuthNav';
 import SearchBar from '@/components/SearchBar';
+import SecurityGuard from '@/components/SecurityGuard';
 
 export const metadata: Metadata = {
   title: 'StorePlay - Download APPs',
@@ -46,6 +47,7 @@ export default function RootLayout({
             </p>
           </div>
         </footer>
+        <SecurityGuard />
       </body>
     </html>
   );

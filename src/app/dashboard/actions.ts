@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import { uploadToHuggingFace, deleteFromHuggingFace, deleteFolderFromHuggingFace } from '@/lib/huggingface/upload'
 
 export async function createApp(formData: FormData) {
   const supabase = await createClient()
@@ -19,19 +20,16 @@ export async function createApp(formData: FormData) {
   
   let icon_url = formData.get('icon_url') as string
   
-  // Handle File Upload for Icon
+  // Handle File Upload for Icon via Hugging Face
   const iconFile = formData.get('icon_file') as File
   if (iconFile && iconFile.size > 0) {
-    const fileExt = iconFile.name.split('.').pop()
-    const filePath = `icons/${user.id}-${Date.now()}.${fileExt}`
-    
-    const { error: uploadError } = await supabase.storage
-      .from('store_assets')
-      .upload(filePath, iconFile)
-      
-    if (!uploadError) {
-      const { data: { publicUrl } } = supabase.storage.from('store_assets').getPublicUrl(filePath)
-      icon_url = publicUrl
+    try {
+      const fileExt = iconFile.name.split('.').pop()
+      const filePath = `icons/${user.id}-${Date.now()}.${fileExt}`
+      icon_url = await uploadToHuggingFace(iconFile, filePath)
+    } catch (err: any) {
+      console.error('HF Icon Upload Error:', err)
+      // Fallback tetap jalan tapi log error
     }
   }
 
@@ -92,23 +90,23 @@ export async function addAppVersion(formData: FormData) {
   let size_mb = parseFloat(formData.get('size_mb') as string) || 0
   let real_size_bytes = size_mb * 1024 * 1024
 
-  // Handle File Upload for APK
+  // Ambil info aplikasi untuk penamaan file yang bagus
+  const { data: currentApp } = await supabase.from('apps').select('title').eq('id', app_id).single()
+  const cleanTitle = (currentApp?.title || 'app').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')
+
+  // Handle File Upload for APK via Hugging Face (Unlimited Size)
   const apkFile = formData.get('apk_file') as File
   if (apkFile && apkFile.size > 0) {
-    const fileExt = apkFile.name.split('.').pop()
-    const filePath = `apks/${app_id}/v${version_name}-${Date.now()}.${fileExt}`
-    
-    // Convert to array buffer for upload
-    const { error: uploadError } = await supabase.storage
-      .from('store_assets')
-      .upload(filePath, apkFile)
+    try {
+      const fileExt = apkFile.name.split('.').pop()
+      // Nama file cantik: NamaApp_v1.0.0.apk
+      const fileName = `${cleanTitle}_v${version_name}.${fileExt}`
+      const filePath = `apks/${app_id}/${fileName}`
       
-    if (!uploadError) {
-      const { data: { publicUrl } } = supabase.storage.from('store_assets').getPublicUrl(filePath)
-      apk_url = publicUrl
+      apk_url = await uploadToHuggingFace(apkFile, filePath)
       real_size_bytes = apkFile.size
-    } else {
-      return redirect(`/dashboard/apps/${app_id}/edit?message=Gagal mengupload APK: ${uploadError.message}&type=error`)
+    } catch (uploadError: any) {
+      return redirect(`/dashboard/apps/${app_id}/edit?message=Gagal mengupload APK ke Hugging Face: ${uploadError.message}&type=error`)
     }
   }
 
@@ -160,26 +158,21 @@ export async function deleteApp(formData: FormData) {
     return redirect(`/dashboard/apps/${id}/edit?message=Gagal menghapus dari database: ${dbError.message}&type=error`)
   }
 
-  // 3. Jika Database berhasil dihapus, baru kita bersihkan file fisiknya di Storage (Background Cleanup)
+  // 3. Bersihkan file fisiknya di Hugging Face (Background Cleanup)
   try {
-    // Hapus Folder APK
-    const { data: apkFiles } = await supabase.storage.from('store_assets').list(`apks/${id}`)
-    if (apkFiles && apkFiles.length > 0) {
-      const filesToDelete = apkFiles.map(f => `apks/${id}/${f.name}`)
-      await supabase.storage.from('store_assets').remove(filesToDelete)
-    }
+    // Hapus Folder APK (Semua Versi)
+    await deleteFolderFromHuggingFace(`apks/${id}`)
 
-    // Hapus Icon
-    if (iconUrl && iconUrl.includes('store_assets')) {
-      const parts = iconUrl.split('/storage/v1/object/public/store_assets/')
+    // Hapus Icon (Hanya jika link-nya dari HF kita)
+    if (iconUrl && iconUrl.includes('huggingface.co')) {
+      const parts = iconUrl.split('resolve/main/')
       const path = parts.length > 1 ? parts[1] : null
       if (path) {
-        await supabase.storage.from('store_assets').remove([path])
+        await deleteFromHuggingFace(path)
       }
     }
-  } catch (storageError) {
-    console.error('Storage Cleanup Warning:', storageError)
-    // Kita tidak menghentikan proses redirect sukses karena DB sudah terhapus
+  } catch (err) {
+    console.warn('Storage Cleanup Warning:', err)
   }
 
   // 4. Paksa refresh semua cache agar data benar-benar hilang dari layar

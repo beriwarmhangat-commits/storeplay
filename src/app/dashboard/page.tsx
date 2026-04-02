@@ -52,9 +52,11 @@ export default async function Dashboard({ searchParams }: PageProps) {
           </p>
         </div>
         
-        <Link href="/dashboard/upload" className="btn btn-primary">
-          <PlusCircle size={20} /> Upload New App
-        </Link>
+        {isAdmin && (
+          <Link href="/admin/apps/new" className="btn btn-primary">
+            <PlusCircle size={20} /> Upload New App
+          </Link>
+        )}
       </div>
 
       {message && (
@@ -67,10 +69,12 @@ export default async function Dashboard({ searchParams }: PageProps) {
       
       {(!apps || apps.length === 0) ? (
         <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
-          <p>You haven't uploaded any applications yet.</p>
-          <button className="btn btn-primary" style={{ marginTop: '1rem' }}>
-            Get Started
-          </button>
+          <p>{isAdmin ? "Anda belum mengupload aplikasi apa pun." : "Hanya administrator yang dapat mengupload aplikasi publik."}</p>
+          {isAdmin && (
+            <Link href="/admin/apps/new" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+              Upload Sekarang
+            </Link>
+          )}
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr' }}>

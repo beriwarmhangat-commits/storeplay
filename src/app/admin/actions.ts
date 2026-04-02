@@ -78,3 +78,29 @@ export async function deleteUserAdmin(formData: FormData) {
   if (error) throw new Error(error.message)
   revalidatePath('/admin')
 }
+// 6. Update Aplikasi secara Global (Content Moderation)
+export async function updateAppAdmin(formData: FormData) {
+  const supabase = await createClient()
+  const appId = formData.get('app_id') as string
+  const title = formData.get('title') as string
+  const status = formData.get('status') as string
+  const category = formData.get('category') as string
+  const description = formData.get('description') as string
+  const iconUrl = formData.get('icon_url') as string
+
+  const { error } = await supabase
+    .from('apps')
+    .update({ 
+      title, 
+      status, 
+      category, 
+      description, 
+      icon_url: iconUrl 
+    })
+    .eq('id', appId)
+
+  if (error) throw new Error(error.message)
+  
+  revalidatePath('/admin/apps')
+  revalidatePath(`/apps/${appId}`)
+}

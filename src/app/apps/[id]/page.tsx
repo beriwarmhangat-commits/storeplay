@@ -96,7 +96,7 @@ export default async function AppDetail({ params }: { params: { id: string } }) 
                 </div>
                 <div style={{ width: '1px', backgroundColor: 'var(--border)' }}></div>
                 <div className="stat-item">
-                  <span className="stat-value">{(app.downloads / 1000).toFixed(1)}k+</span>
+                  <span className="stat-value">{app.downloads || 0}</span>
                   <span className="stat-label">Downloads</span>
                 </div>
                 <div style={{ width: '1px', backgroundColor: 'var(--border)' }}></div>
