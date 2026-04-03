@@ -12,7 +12,7 @@ import SiteAlerts from '@/components/SiteAlerts';
 
 export const revalidate = 0;
 
-export default async function AppDetail({ params }: { params: { id: string } }) {
+export default async function AppDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
 

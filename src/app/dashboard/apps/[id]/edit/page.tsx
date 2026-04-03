@@ -12,9 +12,12 @@ type PageProps = {
   searchParams: Promise<{ message?: string, type?: string }>
 }
 
-export default async function EditAppPage({ params, searchParams }: PageProps) {
-  const { id } = await params
-  const { message, type } = await searchParams
+export default async function EditAppPage(props: { 
+  params: Promise<{ id: string }>, 
+  searchParams: Promise<{ message?: string, type?: string }> 
+}) {
+  const { id } = await props.params
+  const { message, type } = await props.searchParams
   const supabase = await createClient()
 
   // Authenticate user
