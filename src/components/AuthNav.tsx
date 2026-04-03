@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
-import { logout } from '@/app/auth/actions'
+import { logout } from '@/app/admin/login/actions'
 import { LogOut, LayoutDashboard } from 'lucide-react'
 
 export default async function AuthNav() {
