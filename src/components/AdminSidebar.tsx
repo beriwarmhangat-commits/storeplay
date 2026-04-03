@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Users, LayoutGrid, Star, ShieldAlert, Tag, Menu, ChevronLeft, LogOut, Home, LayoutDashboard, Activity, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { logout } from '@/app/admin/login/actions'
+import { logout } from '@/app/auth/actions'
 
 export default function AdminSidebar({ currentAdminName }: { currentAdminName: string }) {
   const [isOpen, setIsOpen] = useState(true)

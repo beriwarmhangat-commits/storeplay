@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
-import { logout } from '@/app/admin/login/actions'
+import { logout } from '@/app/auth/actions'
 import { LogOut, LayoutDashboard } from 'lucide-react'
 
 export default async function AuthNav() {
@@ -8,11 +8,7 @@ export default async function AuthNav() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return (
-      <Link href="/auth" className="btn btn-primary">
-        Sign In / Register
-      </Link>
-    )
+    return null;
   }
 
   // Optional: Check role if we want to show 'Admin Panel' vs 'Dashboard'
