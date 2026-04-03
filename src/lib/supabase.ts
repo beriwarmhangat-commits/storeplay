@@ -15,6 +15,7 @@ export type AppData = {
   category: string;
   rating: number;
   downloads: number;
+  rating_count: number;
   created_at: string;
   updated_at: string;
   profiles?: {

@@ -1,3 +1,5 @@
+'use client';
+
 import { Trash2, ExternalLink, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { deleteAppAdmin } from '@/app/admin/actions'

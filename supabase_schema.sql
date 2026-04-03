@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   developer_name TEXT,
-  role TEXT DEFAULT 'developer' CHECK (role IN ('developer', 'admin')),
+  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'developer', 'admin')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -25,7 +25,7 @@ BEGIN
     new.id, 
     new.email, 
     COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-    COALESCE((new.raw_user_meta_data->>'role')::TEXT, 'developer')
+    'user'
   );
   RETURN new;
 END;
@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS apps (
   category TEXT,
   rating DECIMAL(3,2) DEFAULT 0.0,
   downloads BIGINT DEFAULT 0,
+  rating_count BIGINT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -100,21 +101,78 @@ CREATE POLICY "Admins can delete any app" ON apps FOR DELETE USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
--- ==== APP VERSIONS POLICIES ====
--- Public can view all versions
+-- ==== RATINGS POLICIES ====
+-- Public can view app versions
 CREATE POLICY "Public can view app versions" ON app_versions FOR SELECT USING (true);
 -- Developers can insert versions for their own apps
 CREATE POLICY "Developers can insert versions" ON app_versions FOR INSERT WITH CHECK (
   EXISTS (SELECT 1 FROM apps WHERE id = app_id AND developer_id = auth.uid())
 );
--- Developers can update their own versions
-CREATE POLICY "Developers can update own versions" ON app_versions FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM apps WHERE id = app_id AND developer_id = auth.uid())
+
+-- ==== RATINGS TABLE ====
+CREATE TABLE IF NOT EXISTS public.ratings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  app_id UUID REFERENCES public.apps(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  device_id TEXT, -- ID perangkat (localStorage)
+  user_ip TEXT,  -- Alamat IP
+  score INTEGER NOT NULL CHECK (score >= 1 AND score <= 5),
+  review TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  -- Satu rating per perangkat per aplikasi (untuk Anonim)
+  -- Jika user login, Satu rating per akun per aplikasi
+  UNIQUE(app_id, device_id),
+  UNIQUE(app_id, user_id)
 );
--- Admins can delete and update any version
-CREATE POLICY "Admins can update any version" ON app_versions FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+
+-- RLS for ratings
+ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can view ratings" ON ratings FOR SELECT USING (true);
+CREATE POLICY "Public can insert ratings" ON ratings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own ratings" ON ratings FOR UPDATE USING (
+  auth.uid() = user_id OR (user_id IS NULL AND device_id = auth.jwt()->>'device_id')
 );
-CREATE POLICY "Admins can delete any version" ON app_versions FOR DELETE USING (
+
+-- Function to update app overall rating
+CREATE OR REPLACE FUNCTION update_app_rating()
+RETURNS TRIGGER AS $$
+DECLARE
+  target_id UUID;
+BEGIN
+  target_id := COALESCE(NEW.app_id, OLD.app_id);
+  
+  UPDATE apps
+  SET 
+    rating = COALESCE((SELECT AVG(score) FROM ratings WHERE app_id = target_id), 0),
+    rating_count = (SELECT COUNT(*) FROM ratings WHERE app_id = target_id)
+  WHERE id = target_id;
+  
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to update app rating
+DROP TRIGGER IF EXISTS trg_update_app_rating ON ratings;
+CREATE TRIGGER trg_update_app_rating
+AFTER INSERT OR UPDATE OR DELETE ON ratings
+FOR EACH ROW EXECUTE FUNCTION update_app_rating();
+
+-- ==== SITE ALERTS TABLE ====
+CREATE TABLE IF NOT EXISTS public.site_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  type TEXT DEFAULT 'info' CHECK (type IN ('info', 'warning', 'danger', 'success')),
+  location TEXT DEFAULT 'all' CHECK (location IN ('all', 'home', 'app_detail')),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS for alerts
+ALTER TABLE site_alerts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can view active alerts" ON site_alerts FOR SELECT USING (is_active = true);
+CREATE POLICY "Admins can manage alerts" ON site_alerts FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );

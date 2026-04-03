@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { Users, LayoutGrid, Star, ShieldAlert, Trash2, Edit2, Check, X, Tag, Plus, Menu, ChevronLeft, ChevronRight } from 'lucide-react'
-import { changeUserRole, deleteAppAdmin, deleteRating, updateProfileAdmin, deleteUserAdmin } from '@/app/admin/actions'
+import { changeUserRole, deleteAppAdmin, deleteRating, updateProfileAdmin, deleteUserAdmin, createAlert, deleteAlert, toggleAlert } from '@/app/admin/actions'
 import { createCategory, deleteCategory } from '@/app/admin/category-actions'
+import { AlertCircle, Bell, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 type AdminTabsProps = {
@@ -11,11 +12,12 @@ type AdminTabsProps = {
   apps: any[];
   ratings: any[];
   categories: any[];
+  alerts: any[];
   currentAdminId: string;
 }
 
-export default function AdminDashboardClient({ users, apps, ratings, categories, currentAdminId }: AdminTabsProps) {
-  const [activeTab, setActiveTab] = useState<'users' | 'apps' | 'ratings' | 'categories'>('users')
+export default function AdminDashboardClient({ users, apps, ratings, categories, alerts, currentAdminId }: AdminTabsProps) {
+  const [activeTab, setActiveTab] = useState<'users' | 'apps' | 'ratings' | 'categories' | 'alerts'>('users')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
@@ -63,6 +65,7 @@ export default function AdminDashboardClient({ users, apps, ratings, categories,
             { id: 'apps', label: 'Applications', icon: LayoutGrid },
             { id: 'ratings', label: 'Reviews & Ratings', icon: Star },
             { id: 'categories', label: 'Categories', icon: Tag },
+            { id: 'alerts', label: 'Site Alerts', icon: Bell },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -264,9 +267,78 @@ export default function AdminDashboardClient({ users, apps, ratings, categories,
               </div>
             </div>
           )}
+
+          {activeTab === 'alerts' && (
+            <div>
+              <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', marginBottom: '2.5rem' }}>
+                <h3 style={{ margin: '0 0 1.5rem 0', fontWeight: 800 }}>Create Site Announcement</h3>
+                <form action={createAlert} style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
+                  <input name="title" placeholder="Alert Title (e.g. Server Maintenance)" required style={{ padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)' }} />
+                  
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select name="type" style={{ padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', flex: 1 }}>
+                      <option value="info">Information (Blue)</option>
+                      <option value="warning">Warning (Yellow)</option>
+                      <option value="danger">Critical (Red)</option>
+                      <option value="success">Success (Green)</option>
+                    </select>
+                    <select name="location" style={{ padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', flex: 1 }}>
+                      <option value="all">Everywhere</option>
+                      <option value="home">Home Only</option>
+                      <option value="app_detail">App Details Only</option>
+                    </select>
+                  </div>
+
+                  <textarea name="message" placeholder="Announcement message..." required style={{ gridColumn: 'span 2', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', minHeight: '80px' }} />
+                  
+                  <button type="submit" className="btn btn-primary" style={{ gridColumn: 'span 2', padding: '0.75rem' }}>
+                     <Plus size={18} /> Create Alert
+                  </button>
+                </form>
+              </div>
+
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {alerts.map((alert) => (
+                  <div key={alert.id} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    backgroundColor: 'var(--bg-secondary)', 
+                    borderLeft: `5px solid ${alert.type === 'danger' ? '#ef4444' : alert.type === 'warning' ? '#f59e0b' : '#3b82f6'}`,
+                    padding: '1.25rem', 
+                    borderRadius: 'var(--radius-md)',
+                    opacity: alert.is_active ? 1 : 0.6
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 800, marginBottom: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {alert.title} 
+                        <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.5rem', background: 'var(--bg-primary)', borderRadius: '10px', textTransform: 'uppercase' }}>{alert.location}</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{alert.message}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <form action={toggleAlert}>
+                         <input type="hidden" name="id" value={alert.id} />
+                         <input type="hidden" name="is_active" value={alert.is_active.toString()} />
+                         <button type="submit" style={{ background: 'none', border: 'none', cursor: 'pointer', color: alert.is_active ? '#10b981' : 'var(--text-secondary)' }}>
+                            {alert.is_active ? <Eye size={20} /> : <EyeOff size={20} />}
+                         </button>
+                      </form>
+                      <form action={deleteAlert} onSubmit={e => !confirm('Hapus pengumuman?') && e.preventDefault()}>
+                        <input type="hidden" name="id" value={alert.id} />
+                        <button type="submit" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                           <Trash2 size={20} />
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                ))}
+                {alerts.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No site alerts active.</p>}
+              </div>
+            </div>
+          )}
         </div>
       </main>
-
     </div>
   )
 }

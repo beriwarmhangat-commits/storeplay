@@ -48,7 +48,8 @@ export default function UsersManagementClient({ users, currentAdminId }: { users
               <td style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
                 <form action={changeUserRole} style={{ display: 'flex', gap: '0.5rem' }}>
                   <input type="hidden" name="user_id" value={u.id} />
-                  <select name="role" defaultValue={u.role} disabled={u.id === currentAdminId} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                  <select name="role" defaultValue={u.role} disabled={u.id === currentAdminId} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    <option value="user">User</option>
                     <option value="developer">Developer</option>
                     <option value="admin">Admin</option>
                   </select>

@@ -22,6 +22,22 @@ export async function login(formData: FormData) {
     return redirect('/auth?message=Gagal login. Periksa kembali email dan password Anda.&type=error')
   }
 
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    
+    revalidatePath('/', 'layout')
+    
+    if (profile?.role === 'admin') {
+      redirect('/admin')
+    } else if (profile?.role === 'developer') {
+      redirect('/dashboard')
+    } else {
+      redirect('/')
+    }
+  }
+
   revalidatePath('/', 'layout')
   redirect('/dashboard?message=Login berhasil! Selamat datang kembali.&type=success')
 }

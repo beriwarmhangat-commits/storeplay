@@ -102,5 +102,52 @@ export async function updateAppAdmin(formData: FormData) {
   if (error) throw new Error(error.message)
   
   revalidatePath('/admin/apps')
+  revalidatePath('/admin/apps')
   revalidatePath(`/apps/${appId}`)
+}
+
+// 7. Manage Site Alerts
+export async function createAlert(formData: FormData) {
+  const supabase = await createClient()
+  const title = formData.get('title') as string
+  const message = formData.get('message') as string
+  const type = formData.get('type') as string
+  const location = formData.get('location') as string
+
+  const { error } = await supabase
+    .from('site_alerts')
+    .insert({ title, message, type, location })
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin')
+  revalidatePath('/')
+}
+
+export async function deleteAlert(formData: FormData) {
+  const supabase = await createClient()
+  const id = formData.get('id') as string
+
+  const { error } = await supabase
+    .from('site_alerts')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin')
+  revalidatePath('/')
+}
+
+export async function toggleAlert(formData: FormData) {
+  const supabase = await createClient()
+  const id = formData.get('id') as string
+  const isActive = formData.get('is_active') === 'true'
+
+  const { error } = await supabase
+    .from('site_alerts')
+    .update({ is_active: !isActive })
+    .eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin')
+  revalidatePath('/')
 }

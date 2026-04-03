@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { PlusCircle, Edit3, Settings } from 'lucide-react'
+import DeveloperPaywall from '@/components/DeveloperPaywall'
 
 export const revalidate = 0
 
@@ -18,7 +19,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
   // Authenticate user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    redirect('/admin/login')
+    redirect('/auth') // Point to unified auth
   }
 
   // Get user profile & role
@@ -29,9 +30,11 @@ export default async function Dashboard({ searchParams }: PageProps) {
     .single()
 
   const isAdmin = profile?.role === 'admin'
+  const isDeveloper = profile?.role === 'developer'
   
-  if (!isAdmin) {
-    redirect('/')
+  // Paywall Check: If just a standard user, go to WhatsApp Upgrade screen
+  if (!isAdmin && !isDeveloper) {
+    return <DeveloperPaywall />
   }
 
   // Fetch apps
@@ -56,8 +59,8 @@ export default async function Dashboard({ searchParams }: PageProps) {
           </p>
         </div>
         
-        {isAdmin && (
-          <Link href="/admin/apps/new" className="btn btn-primary">
+        {(isAdmin || isDeveloper) && (
+          <Link href="/dashboard/upload" className="btn btn-primary">
             <PlusCircle size={20} /> Upload New App
           </Link>
         )}
@@ -73,9 +76,9 @@ export default async function Dashboard({ searchParams }: PageProps) {
       
       {(!apps || apps.length === 0) ? (
         <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
-          <p>{isAdmin ? "Anda belum mengupload aplikasi apa pun." : "Hanya administrator yang dapat mengupload aplikasi publik."}</p>
-          {isAdmin && (
-            <Link href="/admin/apps/new" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+          <p>{isAdmin || isDeveloper ? "Anda belum mengupload aplikasi apa pun." : "Hanya administrator dan pengembang yang dapat mengupload aplikasi publik."}</p>
+          {(isAdmin || isDeveloper) && (
+            <Link href="/dashboard/upload" className="btn btn-primary" style={{ marginTop: '1rem' }}>
               Upload Sekarang
             </Link>
           )}

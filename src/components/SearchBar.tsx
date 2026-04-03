@@ -25,26 +25,26 @@ export default function SearchBar() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="search-bar" style={{ position: 'relative', width: '100%', maxWidth: '450px' }}>
-      {loading ? (
-        <Loader2 size={18} className="animate-spin" style={{ color: 'var(--text-secondary)', position: 'absolute', left: '1rem' }} />
-      ) : (
-        <Search size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem' }} />
-      )}
+    <form onSubmit={handleSearch} className="search-bar">
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+        {loading ? (
+          <Loader2 size={18} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+        ) : (
+          <Search size={18} color="var(--text-muted)" />
+        )}
+        
+        <input 
+          type="text" 
+          value={query}
+          onChange={onChange}
+          placeholder="Search for apps, games, and more..." 
+        />
+      </div>
       
-      <input 
-        type="text" 
-        value={query}
-        onChange={onChange}
-        placeholder="Cari aplikasi atau game..." 
-        style={{ paddingLeft: '2.8rem' }}
-      />
-      
-      {/* Tombol enter untuk submit otomatis karena ini di dalam <form> */}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .animate-spin { animation: spin 1s linear infinite; }
-      `}</style>
+      `}} />
     </form>
   )
 }

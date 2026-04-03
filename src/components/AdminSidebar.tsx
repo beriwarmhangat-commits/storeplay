@@ -27,6 +27,7 @@ export default function AdminSidebar({ currentAdminName }: { currentAdminName: s
     { id: 'apps', label: 'Applications', icon: LayoutGrid, href: '/admin/apps' },
     { id: 'ratings', label: 'Reviews & Ratings', icon: Star, href: '/admin/ratings' },
     { id: 'categories', label: 'Categories', icon: Tag, href: '/admin/categories' },
+    { id: 'alerts', label: 'Site Alerts', icon: ShieldAlert, href: '/admin/alerts' },
     { id: 'settings', label: 'System Mode', icon: Settings, href: '/admin/settings' },
   ]
 

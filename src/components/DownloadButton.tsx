@@ -8,6 +8,14 @@ export default function DownloadButton({ apkUrl, sizeMb, versionName }: { apkUrl
   const [progress, setProgress] = useState(0)
   const [completed, setCompleted] = useState(false)
 
+  const transformHuggingFaceUrl = (url: string) => {
+    // If it's a huggingface blob link, convert to resolve link for direct download
+    if (url.includes('huggingface.co') && url.includes('/blob/')) {
+      return url.replace('/blob/', '/resolve/') + '?download=true'
+    }
+    return url
+  }
+
   const handleDownload = () => {
     setDownloading(true)
     setProgress(0)
@@ -20,14 +28,17 @@ export default function DownloadButton({ apkUrl, sizeMb, versionName }: { apkUrl
           setDownloading(false)
           setCompleted(true)
           
-          // Trigger actual download after progress finishes
-          const link = document.createElement('a')
-          link.href = apkUrl
-          link.setAttribute('download', '')
-          link.setAttribute('target', '_blank')
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
+          // Use hidden iframe to trigger download without redirecting or opening new tab
+          const directUrl = transformHuggingFaceUrl(apkUrl)
+          const iframe = document.createElement('iframe')
+          iframe.style.display = 'none'
+          iframe.src = directUrl
+          document.body.appendChild(iframe)
+          
+          // Cleanup iframe after some time
+          setTimeout(() => {
+            document.body.removeChild(iframe)
+          }, 60000)
           
           setTimeout(() => {
             setCompleted(false)
@@ -35,10 +46,9 @@ export default function DownloadButton({ apkUrl, sizeMb, versionName }: { apkUrl
           }, 3000)
           return 100
         }
-        // Randomize speed for realistic effect
         return prev + Math.floor(Math.random() * 15) + 5
       })
-    }, 200)
+    }, 250)
   }
 
   if (completed) {
