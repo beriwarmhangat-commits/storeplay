@@ -213,7 +213,7 @@ export default async function AppDetail({ params }: { params: { id: string } }) 
               <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', textAlign: 'center' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>Ingin memberi ulasan?</h3>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Silakan login terlebih dahulu untuk memberikan rating dan ulasan.</p>
-                <Link href="/admin/login" className="btn btn-primary" style={{ width: '100%' }}>Login Sekarang</Link>
+                <Link href="/auth" className="btn btn-primary" style={{ width: '100%' }}>Login Sekarang</Link>
               </div>
             )}
           </div>

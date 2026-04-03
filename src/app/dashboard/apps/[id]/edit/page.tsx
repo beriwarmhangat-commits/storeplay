@@ -20,7 +20,7 @@ export default async function EditAppPage({ params, searchParams }: PageProps) {
   // Authenticate user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    redirect('/admin/login')
+    redirect('/auth')
   }
 
   // Fetch app
