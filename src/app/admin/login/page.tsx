@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { login, signup } from './actions'
+import { login } from './actions'
 import { useSearchParams } from 'next/navigation'
 import LoadingOverlay from '@/components/LoadingOverlay'
 
-function AuthForm() {
-  const [isLogin, setIsLogin] = useState(true)
+function AdminAuthForm() {
   const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
@@ -28,21 +27,17 @@ function AuthForm() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true)
     try {
-       if (isLogin) {
-         await login(formData)
-       } else {
-         await signup(formData)
-       }
+      await login(formData)
     } finally {
-       setLoading(false)
+      setLoading(false)
     }
   }
 
   return (
     <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '3rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
-      {loading && <LoadingOverlay message={isLogin ? "Sedang login..." : "Mendaftarkan Anda..."} />}
+      {loading && <LoadingOverlay message="Sedang login admin..." />}
       <h1 style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.8rem', fontWeight: 800 }}>
-        {isLogin ? 'Welcome Back' : 'Create Account'}
+        Admin Login
       </h1>
       
       {message && (
@@ -53,7 +48,7 @@ function AuthForm() {
 
       <form action={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="email" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Email Address</label>
+          <label htmlFor="email" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Admin Email</label>
           <input id="email" name="email" type="email" required style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
         </div>
 
@@ -63,18 +58,18 @@ function AuthForm() {
         </div>
 
         <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
-          Sign In
+          Sign In to Admin
         </button>
       </form>
     </div>
   )
 }
 
-export default function AuthPage() {
+export default function AdminLoginPage() {
   return (
     <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
       <Suspense fallback={<div>Loading...</div>}>
-        <AuthForm />
+        <AdminAuthForm />
       </Suspense>
     </div>
   )
