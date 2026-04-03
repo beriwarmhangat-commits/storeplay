@@ -6,7 +6,7 @@ export default async function AdminNewAppPage({ searchParams }: { searchParams: 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/auth')
+  if (!user) redirect('/admin/login')
 
   // Proteksi Tambahan: Hanya Admin yang boleh akses upload (Double check role)
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()

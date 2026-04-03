@@ -10,7 +10,7 @@ export async function createApp(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return redirect('/auth')
+    return redirect('/admin/login')
   }
 
   const title = formData.get('title') as string
@@ -79,7 +79,7 @@ export async function updateApp(formData: FormData) {
 export async function addAppVersion(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return redirect('/auth')
+  if (!user) return redirect('/admin/login')
 
   const app_id = formData.get('app_id') as string
   const version_name = formData.get('version_name') as string
