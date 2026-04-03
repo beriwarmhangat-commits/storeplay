@@ -21,7 +21,7 @@ export default async function AppDetail({ params }: { params: Promise<{ id: stri
     .from('apps')
     .select('*, developer:profiles!developer_id(developer_name)')
     .eq('id', id)
-    .single();
+    .maybeSingle(); // handle missing app safely without PGRST116 error
 
   if (appError || !appData) {
     console.error('Error fetching app:', appError);

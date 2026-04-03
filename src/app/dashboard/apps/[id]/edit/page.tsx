@@ -31,7 +31,7 @@ export default async function EditAppPage(props: {
     .from('apps')
     .select('*')
     .eq('id', id)
-    .single()
+    .maybeSingle() // handle missing app safely
 
   if (appError || !appData) {
     redirect('/dashboard?message=Aplikasi tidak ditemukan atau Anda tidak memiliki akses.&type=error')
