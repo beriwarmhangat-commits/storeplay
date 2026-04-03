@@ -142,7 +142,7 @@ export default async function EditAppPage(props: {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.875rem' }}>Catatan Rilis (What's New)</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.875rem' }}>Catatan Rilis (What&apos;s New)</label>
               <textarea name="release_notes" rows={3} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
             </div>
 
