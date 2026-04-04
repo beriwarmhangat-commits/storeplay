@@ -1,5 +1,5 @@
-import { supabase, AppData, AppVersion } from '@/lib/supabase';
-import { Star, ShieldCheck, ChevronLeft, User, Download, Calendar, Info, History, MessageSquare, Share2 } from 'lucide-react';
+import DeveloperReplyForm from '@/components/DeveloperReplyForm';
+import { Star, ShieldCheck, ChevronLeft, User, Download, Calendar, Info, History, MessageSquare, Share2, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import RatingForm from '@/components/RatingForm';
@@ -242,23 +242,47 @@ export default async function AppDetail({ params }: { params: Promise<{ id: stri
                 {normalizedRatings.length === 0 ? (
                   <p style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>No reviews yet. Be the first to share your thoughts!</p>
                 ) : (
-                  normalizedRatings.map((r: any) => (
-                    <div key={r.id} className="review-item">
-                      <div className="review-header">
-                         <div className="user-avatar"><User size={18} /></div>
-                         <div className="user-info">
-                            <div className="user-name">{r.profiles?.developer_name || 'Anonymous User'}</div>
-                            <div className="user-stars">
-                               {[1, 2, 3, 4, 5].map(s => (
-                                 <Star key={s} size={10} fill={s <= r.score ? '#fbbf24' : 'none'} color={s <= r.score ? '#fbbf24' : 'var(--text-muted)'} />
-                               ))}
+                  normalizedRatings.map((r: any) => {
+                    const isAppDeveloper = user && (user.id === app.developer_id);
+                    
+                    return (
+                      <div key={r.id} className="review-item">
+                        <div className="review-header">
+                           <div className="user-avatar"><User size={18} /></div>
+                           <div className="user-info">
+                              <div className="user-name">{r.profiles?.developer_name || 'Anonymous User'}</div>
+                              <div className="user-stars">
+                                 {[1, 2, 3, 4, 5].map(s => (
+                                   <Star key={s} size={10} fill={s <= r.score ? '#fbbf24' : 'none'} color={s <= r.score ? '#fbbf24' : 'var(--text-muted)'} />
+                                 ))}
+                              </div>
+                           </div>
+                           <div className="review-date">{new Date(r.created_at).toLocaleDateString()}</div>
+                        </div>
+                        {r.review && <p className="review-text">{r.review}</p>}
+                        
+                        {/* Developer Reply Display/Form */}
+                        {isAppDeveloper ? (
+                          <DeveloperReplyForm 
+                            ratingId={r.id} 
+                            appId={id} 
+                            initialReply={r.developer_reply} 
+                            repliedAt={r.replied_at} 
+                          />
+                        ) : r.developer_reply && (
+                          <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'var(--bg-elevated)', borderRadius: 'var(--radius-lg)', borderLeft: '3px solid var(--primary)' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <MessageCircle size={14} /> Developer Reply
+                              <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>
+                                • {r.replied_at ? new Date(r.replied_at).toLocaleDateString() : ''}
+                              </span>
                             </div>
-                         </div>
-                         <div className="review-date">{new Date(r.created_at).toLocaleDateString()}</div>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', margin: 0, lineHeight: 1.5 }}>{r.developer_reply}</p>
+                          </div>
+                        )}
                       </div>
-                      {r.review && <p className="review-text">{r.review}</p>}
-                    </div>
-                  ))
+                    )
+                  })
                 )}
               </div>
             </div>
